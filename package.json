@@ -1,0 +1,45 @@
+{
+  "name": "geostyler-geoserver-sld-parser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/dist/GeoserverSldStyleParser.js",
+  "types": "build/dist/GeoserverSldStyleParser.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && npm run build:browser",
+    "build:browser": "webpack --config browser-build.config.js",
+    "start:dev": "webpack --config dev-build.config.js --watch",
+    "pretest": "npm run lint",
+    "prepublishOnly": "npm run build",
+    "test": "jest",
+    "test:watch": "jest --watchAll",
+    "lint": "tslint --project tsconfig.json --config tslint.json && tsc --noEmit --project tsconfig.json",
+    "release": "np --no-yarn && git push https://github.com/terrestris/geostyler-sld-parser.git master --tags"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "geostyler-sld-parser": "^2.0.0",
+    "geostyler-style": "^2.0.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
+    "@babel/polyfill": "^7.4.4",
+    "@babel/preset-env": "^7.5.5",
+    "@babel/preset-typescript": "^7.3.3",
+    "@types/jest": "^24.0.18",
+    "@types/lodash": "^4.14.138",
+    "@types/node": "^12.7.3",
+    "@types/xml2js": "^0.4.4",
+    "babel-jest": "^24.9.0",
+    "coveralls": "^3.0.6",
+    "jest": "^24.9.0",
+    "np": "^5.0.3",
+    "ts-loader": "^6.0.4",
+    "tslint": "^5.19.0",
+    "typescript": "^3.6.2",
+    "webpack": "^4.39.3",
+    "webpack-cli": "^3.3.7"
+  }
+}
