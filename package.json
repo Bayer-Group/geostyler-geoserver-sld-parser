@@ -1,6 +1,6 @@
 {
-  "name": "geostyler-geoserver-sld-parser",
-  "version": "1.0.0",
+  "name": "@bayer/geostyler-geoserver-sld-parser",
+  "version": "0.1.0",
   "description": "",
   "main": "build/dist/GeoserverSldStyleParser.js",
   "types": "build/dist/GeoserverSldStyleParser.d.ts",
@@ -15,8 +15,7 @@
     "lint": "tslint --project tsconfig.json --config tslint.json && tsc --noEmit --project tsconfig.json",
     "release": "np --no-yarn && git push https://github.com/terrestris/geostyler-sld-parser.git master --tags"
   },
-  "author": "",
-  "license": "ISC",
+  "license": "BSD",
   "dependencies": {
     "geostyler-sld-parser": "^2.0.0",
     "geostyler-style": "^2.0.3"
