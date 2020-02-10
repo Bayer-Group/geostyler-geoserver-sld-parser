@@ -1,7 +1,7 @@
 {
   "name": "@bayer/geostyler-geoserver-sld-parser",
-  "version": "0.1.0",
-  "description": "",
+  "version": "0.2.0",
+  "description": "GeoStyler-Geoserver-Style-Parser implementation for SLD",
   "main": "build/dist/GeoserverSldStyleParser.js",
   "types": "build/dist/GeoserverSldStyleParser.d.ts",
   "scripts": {
@@ -16,6 +16,17 @@
     "release": "np --no-yarn && git push https://github.com/terrestris/geostyler-sld-parser.git master --tags"
   },
   "license": "BSD",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MonsantoCo/geostyler-geoserver-sld-parser"
+  },
+  "keywords": [
+    "geostyler",
+    "geoserver",
+    "styles",
+    "sld",
+    "parser"
+  ],
   "dependencies": {
     "geostyler-sld-parser": "^2.0.0",
     "geostyler-style": "^2.0.3"
