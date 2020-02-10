@@ -11,6 +11,7 @@ interface GeoserverTextSymbolizer extends TextSymbolizer {
   goodnessOfFit?: number;
   labelAllGroup?: boolean;
   polygonAlign?: string;
+  LabelPlacement?: object;
 }
 
 export default GeoserverTextSymbolizer;
