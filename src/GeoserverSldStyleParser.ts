@@ -1,4 +1,8 @@
 import SldStyleParser from 'geostyler-sld-parser';
+import {
+  Filter,
+  ComparisonFilter
+} from 'geostyler-style';
 import GeoserverTextSymbolizer from './GeoserverTextSymbolizer';
 
 const VENDOR_OPTIONS_MAP = [
@@ -13,6 +17,10 @@ const VENDOR_OPTIONS_MAP = [
   'labelAllGroup',
   'polygonAlign'
 ]
+
+function keysByValue (object: any, value: any) {
+  return Object.keys(object).filter(key => object[key] === value);
+}
 
 class GeoserverSldStyleParser extends SldStyleParser {
   // reading SLD string and return object
@@ -52,6 +60,35 @@ class GeoserverSldStyleParser extends SldStyleParser {
     finalSymbolizer.TextSymbolizer[0].LabelPlacement = textSymbolizer.LabelPlacement;
 
     return finalSymbolizer;
+  }
+
+  getSldComparisonFilterFromComparisonFilter(comparisonFilter: ComparisonFilter): any {
+    const sldComparisonFilter = super.getSldComparisonFilterFromComparisonFilter(comparisonFilter);
+    const operator = comparisonFilter[0];
+    const value = comparisonFilter[2];
+    const sldOperators: string[] = keysByValue(SldStyleParser.comparisonMap, operator);
+    let sldOperator: string = (sldOperators.length > 1 && value === null)
+      ? sldOperators[1] : sldOperators[0];
+
+    if (sldOperator === 'PropertyIsLike' && comparisonFilter[3]) {
+      return {
+        ...sldComparisonFilter,
+        [sldOperator]: sldComparisonFilter[sldOperator].map((filter: any) => ({ ...filter, '$': comparisonFilter[3] }))
+      };
+    } else {
+      return sldComparisonFilter;
+    }
+  }
+
+  getFilterFromOperatorAndComparison(sldOperatorName: string, sldFilter: any): Filter {
+    const filter = super.getFilterFromOperatorAndComparison(sldOperatorName, sldFilter);
+    const isComparison = Object.keys(SldStyleParser.comparisonMap).includes(sldOperatorName);
+
+    if (isComparison && sldOperatorName === 'PropertyIsLike') {
+      filter.push(sldFilter?.$);
+    }
+
+    return filter;
   }
 }
 
