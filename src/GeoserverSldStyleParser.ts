@@ -85,7 +85,7 @@ class GeoserverSldStyleParser extends SldStyleParser {
     const isComparison = Object.keys(SldStyleParser.comparisonMap).includes(sldOperatorName);
 
     if (isComparison && sldOperatorName === 'PropertyIsLike') {
-      filter.push(sldFilter?.$);
+      filter.push(sldFilter.$);
     }
 
     return filter;
