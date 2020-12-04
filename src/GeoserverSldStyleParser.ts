@@ -1,7 +1,7 @@
 import SldStyleParser from 'geostyler-sld-parser';
 import {
   Filter,
-  ComparisonFilter
+  ComparisonFilter, BaseSymbolizer,
 } from 'geostyler-style';
 import GeoserverFillSymbolizer from './GeoserverFillSymbolizer';
 import GeoserverTextSymbolizer from './GeoserverTextSymbolizer';
@@ -48,15 +48,7 @@ class GeoserverSldStyleParser extends SldStyleParser {
   // write to xml2js compatible output format (which converts to a string..eventually)
   getSldTextSymbolizerFromTextSymbolizer(textSymbolizer: GeoserverTextSymbolizer): any {
     const finalSymbolizer = super.getSldTextSymbolizerFromTextSymbolizer(textSymbolizer);
-
-    const vendorOption = Object.keys(textSymbolizer).filter(
-      (propertyName: string) => VENDOR_OPTIONS_MAP.includes(propertyName))
-      .map((propertyName: string) => {
-        return {
-          '_': textSymbolizer[propertyName],
-          '$': { name: propertyName }
-        };
-    });
+    const vendorOption = this.writeVendorOption_(textSymbolizer);
 
     finalSymbolizer.TextSymbolizer[0].VendorOption = vendorOption;
 
@@ -83,14 +75,7 @@ class GeoserverSldStyleParser extends SldStyleParser {
 
   getSldPolygonSymbolizerFromFillSymbolizer(fillSymbolizer: GeoserverFillSymbolizer): any {
     const finalSymbolizer = super.getSldPolygonSymbolizerFromFillSymbolizer(fillSymbolizer);
-    const vendorOption = Object.keys(fillSymbolizer).filter(
-      (propertyName: string) => VENDOR_OPTIONS_MAP.includes(propertyName))
-      .map((propertyName: string) => {
-        return {
-          '_': fillSymbolizer[propertyName],
-          '$': { name: propertyName }
-        };
-      });
+    const vendorOption = this.writeVendorOption_(fillSymbolizer);
     finalSymbolizer.PolygonSymbolizer[0].VendorOption = vendorOption;
     return finalSymbolizer;
   }
@@ -122,6 +107,17 @@ class GeoserverSldStyleParser extends SldStyleParser {
     }
 
     return filter;
+  }
+
+  writeVendorOption_(symbolizer: BaseSymbolizer) {
+    return Object.keys(symbolizer).filter(
+      (propertyName: string) => VENDOR_OPTIONS_MAP.includes(propertyName))
+      .map((propertyName: string) => {
+        return {
+          '_': symbolizer[propertyName],
+          '$': { name: propertyName }
+        };
+      });
   }
 }
 
