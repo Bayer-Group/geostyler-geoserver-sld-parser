@@ -3,6 +3,7 @@ import {
   Filter,
   ComparisonFilter
 } from 'geostyler-style';
+import GeoserverFillSymbolizer from './GeoserverFillSymbolizer';
 import GeoserverTextSymbolizer from './GeoserverTextSymbolizer';
 
 const VENDOR_OPTIONS_MAP = [
@@ -15,8 +16,9 @@ const VENDOR_OPTIONS_MAP = [
   'conflictResolution',
   'goodnessOfFit',
   'labelAllGroup',
-  'polygonAlign'
-]
+  'polygonAlign',
+  'graphicMargin'
+];
 
 function keysByValue (object: any, value: any) {
   return Object.keys(object).filter(key => object[key] === value);
@@ -60,6 +62,36 @@ class GeoserverSldStyleParser extends SldStyleParser {
 
     finalSymbolizer.TextSymbolizer[0].LabelPlacement = textSymbolizer.LabelPlacement;
 
+    return finalSymbolizer;
+  }
+
+  getFillSymbolizerFromSldSymbolizer(sldSymbolizer: any): GeoserverFillSymbolizer {
+    const finalSymbolizer = super.getFillSymbolizerFromSldSymbolizer(sldSymbolizer) as GeoserverFillSymbolizer;
+
+    // if there are vendor options, parse them and assign to the final symbolizer
+    if (Array.isArray(sldSymbolizer.VendorOption)) {
+      const assignOption = (option: any) => {
+        const { $: { name }, _: value } = option;
+
+        finalSymbolizer[name] = value;
+      };
+
+      sldSymbolizer.VendorOption.forEach(assignOption);
+    }
+    return finalSymbolizer;
+  }
+
+  getSldPolygonSymbolizerFromFillSymbolizer(fillSymbolizer: GeoserverFillSymbolizer): any {
+    const finalSymbolizer = super.getSldPolygonSymbolizerFromFillSymbolizer(fillSymbolizer);
+    const vendorOption = Object.keys(fillSymbolizer).filter(
+      (propertyName: string) => VENDOR_OPTIONS_MAP.includes(propertyName))
+      .map((propertyName: string) => {
+        return {
+          '_': fillSymbolizer[propertyName],
+          '$': { name: propertyName }
+        };
+      });
+    finalSymbolizer.PolygonSymbolizer[0].VendorOption = vendorOption;
     return finalSymbolizer;
   }
 
