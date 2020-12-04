@@ -25,7 +25,7 @@ function keysByValue (object: any, value: any) {
 class GeoserverSldStyleParser extends SldStyleParser {
   // reading SLD string and return object
   getTextSymbolizerFromSldSymbolizer(sldSymbolizer: any): GeoserverTextSymbolizer {
-    const finalSymbolizer = super.getTextSymbolizerFromSldSymbolizer(sldSymbolizer)
+    const finalSymbolizer = super.getTextSymbolizerFromSldSymbolizer(sldSymbolizer) as GeoserverTextSymbolizer;
 
     // if there are vendor options, parse them and assign to the final symbolizer
     if (Array.isArray(sldSymbolizer.VendorOption)) {
@@ -33,12 +33,12 @@ class GeoserverSldStyleParser extends SldStyleParser {
         const { $: { name }, _: value } = option;
 
         finalSymbolizer[name] = value;
-      }
+      };
 
       sldSymbolizer.VendorOption.forEach(assignOption);
     }
 
-    finalSymbolizer['LabelPlacement'] = sldSymbolizer.LabelPlacement;
+    finalSymbolizer.LabelPlacement = sldSymbolizer.LabelPlacement;
 
     return finalSymbolizer;
   }
@@ -47,12 +47,13 @@ class GeoserverSldStyleParser extends SldStyleParser {
   getSldTextSymbolizerFromTextSymbolizer(textSymbolizer: GeoserverTextSymbolizer): any {
     const finalSymbolizer = super.getSldTextSymbolizerFromTextSymbolizer(textSymbolizer);
 
-    const vendorOption = Object.keys(textSymbolizer).filter((propertyName: string) => VENDOR_OPTIONS_MAP.includes(propertyName))
+    const vendorOption = Object.keys(textSymbolizer).filter(
+      (propertyName: string) => VENDOR_OPTIONS_MAP.includes(propertyName))
       .map((propertyName: string) => {
         return {
           '_': textSymbolizer[propertyName],
           '$': { name: propertyName }
-        }
+        };
     });
 
     finalSymbolizer.TextSymbolizer[0].VendorOption = vendorOption;
