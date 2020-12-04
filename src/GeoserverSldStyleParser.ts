@@ -30,15 +30,7 @@ class GeoserverSldStyleParser extends SldStyleParser {
     const finalSymbolizer = super.getTextSymbolizerFromSldSymbolizer(sldSymbolizer) as GeoserverTextSymbolizer;
 
     // if there are vendor options, parse them and assign to the final symbolizer
-    if (Array.isArray(sldSymbolizer.VendorOption)) {
-      const assignOption = (option: any) => {
-        const { $: { name }, _: value } = option;
-
-        finalSymbolizer[name] = value;
-      };
-
-      sldSymbolizer.VendorOption.forEach(assignOption);
-    }
+    this.assignVendorOptions_(sldSymbolizer, finalSymbolizer);
 
     finalSymbolizer.LabelPlacement = sldSymbolizer.LabelPlacement;
 
@@ -59,17 +51,7 @@ class GeoserverSldStyleParser extends SldStyleParser {
 
   getFillSymbolizerFromSldSymbolizer(sldSymbolizer: any): GeoserverFillSymbolizer {
     const finalSymbolizer = super.getFillSymbolizerFromSldSymbolizer(sldSymbolizer) as GeoserverFillSymbolizer;
-
-    // if there are vendor options, parse them and assign to the final symbolizer
-    if (Array.isArray(sldSymbolizer.VendorOption)) {
-      const assignOption = (option: any) => {
-        const { $: { name }, _: value } = option;
-
-        finalSymbolizer[name] = value;
-      };
-
-      sldSymbolizer.VendorOption.forEach(assignOption);
-    }
+    this.assignVendorOptions_(sldSymbolizer, finalSymbolizer);
     return finalSymbolizer;
   }
 
@@ -118,6 +100,16 @@ class GeoserverSldStyleParser extends SldStyleParser {
           '$': { name: propertyName }
         };
       });
+  }
+
+  assignVendorOptions_(sldSymbolizer: any, finalSymbolizer: BaseSymbolizer): void {
+    if (Array.isArray(sldSymbolizer.VendorOption)) {
+      const assignOption = (option: any) => {
+        const {$: {name}, _: value} = option;
+        finalSymbolizer[name] = value;
+      };
+      sldSymbolizer.VendorOption.forEach(assignOption);
+    }
   }
 }
 
