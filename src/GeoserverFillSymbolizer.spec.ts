@@ -15,7 +15,7 @@ const polygonSimpleGraphicFill: any = {
             "radius": 8,
             "color": "#0000FF",
           },
-          "graphicMargin": '3 5 10'
+          "graphic-margin": '3 5 10'
         },
       ],
     },
@@ -48,7 +48,7 @@ const sldOutput = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
               </GraphicFill>
               <CssParameter name="fill">#a5c9e5</CssParameter>
             </Fill>
-            <VendorOption name="graphicMargin">3 5 10</VendorOption>
+            <VendorOption name="graphic-margin">3 5 10</VendorOption>
           </PolygonSymbolizer>
         </Rule>
       </FeatureTypeStyle>
@@ -61,7 +61,7 @@ const parser = new GeoserverSldStyleParser();
 
 describe('GeoserverFillSymbolizer', () => {
   describe('#writeStyle', () => {
-    it('transforms graphicMargin in VendorOptions', () => {
+    it('transforms graphic-margin in VendorOptions', () => {
       expect.assertions(1);
       parser
         .writeStyle(polygonSimpleGraphicFill).then(sld => {

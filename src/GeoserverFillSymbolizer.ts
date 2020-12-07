@@ -1,7 +1,7 @@
 import { FillSymbolizer } from 'geostyler-style';
 
 interface GeoserverFillSymbolizer extends FillSymbolizer {
-  graphicMargin?: string;
+  'graphic-margin'?: string;
 }
 
 export default GeoserverFillSymbolizer;

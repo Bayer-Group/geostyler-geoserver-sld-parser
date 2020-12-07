@@ -17,7 +17,7 @@ const VENDOR_OPTIONS_MAP = [
   'goodnessOfFit',
   'labelAllGroup',
   'polygonAlign',
-  'graphicMargin'
+  'graphic-margin'
 ];
 
 function keysByValue (object: any, value: any) {
