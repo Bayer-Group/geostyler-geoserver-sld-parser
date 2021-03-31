@@ -1,9 +1,8 @@
 import SldStyleParser from 'geostyler-sld-parser';
-import {
-  Filter,
-  ComparisonFilter
-} from 'geostyler-style';
+import { WellKnownName } from 'geostyler-style';
 import GeoserverTextSymbolizer from './GeoserverTextSymbolizer';
+import GeoserverMarkSymbolizer from './GeoserverMarkSymbolizer'
+var _get = require('lodash.get')
 
 const VENDOR_OPTIONS_MAP = [
   'partials',
@@ -18,9 +17,7 @@ const VENDOR_OPTIONS_MAP = [
   'polygonAlign'
 ]
 
-function keysByValue (object: any, value: any) {
-  return Object.keys(object).filter(key => object[key] === value);
-}
+var WELLKNOWNNAME_TTF_REGEXP = /^ttf:\/\/(.+)#(.+)$/;
 
 class GeoserverSldStyleParser extends SldStyleParser {
   // reading SLD string and return object
@@ -62,33 +59,118 @@ class GeoserverSldStyleParser extends SldStyleParser {
     return finalSymbolizer;
   }
 
-  getSldComparisonFilterFromComparisonFilter(comparisonFilter: ComparisonFilter): any {
-    const sldComparisonFilter = super.getSldComparisonFilterFromComparisonFilter(comparisonFilter);
-    const operator = comparisonFilter[0];
-    const value = comparisonFilter[2];
-    const sldOperators: string[] = keysByValue(SldStyleParser.comparisonMap, operator);
-    let sldOperator: string = (sldOperators.length > 1 && value === null)
-      ? sldOperators[1] : sldOperators[0];
-
-    if (sldOperator === 'PropertyIsLike' && comparisonFilter[3]) {
-      return {
-        ...sldComparisonFilter,
-        [sldOperator]: sldComparisonFilter[sldOperator].map((filter: any) => ({ ...filter, '$': comparisonFilter[3] }))
-      };
-    } else {
-      return sldComparisonFilter;
+/**
+   * Get the GeoStyler-Style MarkSymbolizer from an SLD Symbolizer
+   *
+   * @param {object} sldSymbolizer The SLD Symbolizer
+   * @return {MarkSymbolizer} The GeoStyler-Style MarkSymbolizer
+   */
+  getMarkSymbolizerFromSldSymbolizer(sldSymbolizer: any): GeoserverMarkSymbolizer {
+    const wellKnownName: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
+    let strokeParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].CssParameter') || [];
+    if (strokeParams.length === 0) {
+      strokeParams = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].SvgParameter') || [];
     }
-  }
+    const opacity: string = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
+    const size: string = _get(sldSymbolizer, 'Graphic[0].Size[0]');
+    const rotation: string = _get(sldSymbolizer, 'Graphic[0].Rotation[0]');
 
-  getFilterFromOperatorAndComparison(sldOperatorName: string, sldFilter: any): Filter {
-    const filter = super.getFilterFromOperatorAndComparison(sldOperatorName, sldFilter);
-    const isComparison = Object.keys(SldStyleParser.comparisonMap).includes(sldOperatorName);
-
-    if (isComparison && sldOperatorName === 'PropertyIsLike') {
-      filter.push(sldFilter.$);
+    let fillParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter') || [];
+    if (fillParams.length === 0) {
+      fillParams = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].SvgParameter') || [];
+    }
+    const colorIdx: number = fillParams.findIndex((cssParam: any) => {
+      return cssParam.$.name === 'fill';
+    });
+    let color: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + ']._');
+    if (!color) {
+      const svg = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].SvgParameter[' + colorIdx + ']._');
+      if (svg) {
+        color = svg;
+      }
     }
 
-    return filter;
+    debugger;var sldFunction = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + '].Function');
+
+    if (sldFunction) {
+      console.log('hello world we have made it', sldFunction)
+    }
+
+    const fillOpacityIdx: number = fillParams.findIndex((cssParam: any) => {
+      return cssParam.$.name === 'fill-opacity';
+    });
+    let fillOpacity: string = _get(sldSymbolizer,
+      'Graphic[0].Mark[0].Fill[0].CssParameter[' + fillOpacityIdx + ']._');
+    if (!fillOpacity) {
+      fillOpacity = _get(sldSymbolizer,
+        'Graphic[0].Mark[0].Fill[0].SvgParameter[' + fillOpacityIdx + ']._');
+    }
+    const markSymbolizer: GeoserverMarkSymbolizer = {
+      kind: 'Mark',
+    } as GeoserverMarkSymbolizer;
+
+    if (opacity) {
+      markSymbolizer.opacity = parseFloat(opacity);
+    }
+    if (fillOpacity) {
+      markSymbolizer.fillOpacity = parseFloat(fillOpacity);
+    }
+    if (color) {
+      markSymbolizer.color = color;
+    }
+    if (rotation) {
+      markSymbolizer.rotate = parseFloat(rotation);
+    }
+    if (size) {
+      markSymbolizer.radius = parseFloat(size) / 2;
+    }
+
+    switch (wellKnownName) {
+      case 'circle':
+      case 'square':
+      case 'triangle':
+      case 'star':
+      case 'cross':
+      case 'x':
+        const wkn = wellKnownName.charAt(0).toUpperCase() + wellKnownName.slice(1);
+        markSymbolizer.wellKnownName = wkn as WellKnownName;
+        break;
+      case 'shape://vertline':
+      case 'shape://horline':
+      case 'shape://slash':
+      case 'shape://backslash':
+      case 'shape://dot':
+      case 'shape://plus':
+      case 'shape://times':
+      case 'shape://oarrow':
+      case 'shape://carrow':
+        markSymbolizer.wellKnownName = wellKnownName as WellKnownName;
+        break;
+      default:
+        if (WELLKNOWNNAME_TTF_REGEXP.test(wellKnownName)) {
+          markSymbolizer.wellKnownName = wellKnownName as WellKnownName;
+          break;
+        }
+        throw new Error('MarkSymbolizer cannot be parsed. Unsupported WellKnownName.');
+    }
+
+    strokeParams.forEach((param: any) => {
+      switch (param.$.name) {
+        case 'stroke':
+          markSymbolizer.strokeColor = param._;
+          break;
+        case 'stroke-width':
+          markSymbolizer.strokeWidth = parseFloat(param._);
+          break;
+        case 'stroke-opacity':
+          markSymbolizer.strokeOpacity = parseFloat(param._);
+          break;
+        default:
+          break;
+      }
+    });
+
+    return markSymbolizer;
   }
 }
 
