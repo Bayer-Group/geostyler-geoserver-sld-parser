@@ -52,6 +52,8 @@ interface GeoserverMarkSymbolizer extends BasePointSymbolizer {
    * Compare https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-circle-circle-pitch-scale
    */
   pitchScale?: 'map' | 'viewport';
+
+  function?: any
 }
 
 export default GeoserverMarkSymbolizer

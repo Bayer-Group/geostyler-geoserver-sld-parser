@@ -66,6 +66,8 @@ class GeoserverSldStyleParser extends SldStyleParser {
    * @return {MarkSymbolizer} The GeoStyler-Style MarkSymbolizer
    */
   getMarkSymbolizerFromSldSymbolizer(sldSymbolizer: any): GeoserverMarkSymbolizer {
+
+    console.log(sldSymbolizer)
     const wellKnownName: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
     let strokeParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].CssParameter') || [];
     if (strokeParams.length === 0) {
@@ -90,11 +92,9 @@ class GeoserverSldStyleParser extends SldStyleParser {
       }
     }
 
-    debugger;var sldFunction = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + '].Function');
+    var sldFunction = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + '].Function');
 
-    if (sldFunction) {
-      console.log('hello world we have made it', sldFunction)
-    }
+    
 
     const fillOpacityIdx: number = fillParams.findIndex((cssParam: any) => {
       return cssParam.$.name === 'fill-opacity';
@@ -108,6 +108,39 @@ class GeoserverSldStyleParser extends SldStyleParser {
     const markSymbolizer: GeoserverMarkSymbolizer = {
       kind: 'Mark',
     } as GeoserverMarkSymbolizer;
+
+    if (sldFunction) {
+      if (sldFunction[0].$.name === 'Interpolate') {
+        // let i, j, temparray, chunk = 2;
+        // const newArray = []
+        // for (i = 0,j = sldFunction[0].Literal.length; i < j; i += chunk) {
+        //     temparray = sldFunction[0].Literal.slice(i, i + chunk);
+        //     // do whatever
+        //     newArray.push(temparray)
+        // }
+
+        const perChunk = 2 // items per chunk    
+
+        var newArray = sldFunction[0].Literal.reduce((resultArray: any, item: any, index: any) => { 
+          const chunkIndex = Math.floor(index/perChunk)
+
+          if(!resultArray[chunkIndex]) {
+            resultArray[chunkIndex] = [] // start a new chunk
+          }
+          resultArray[chunkIndex].push(item)
+
+          return resultArray
+        }, [])
+  
+        const functionArray = [
+          sldFunction[0].$.name,
+          sldFunction[0].PropertyName[0],
+          newArray
+        ]
+  
+        markSymbolizer.function = functionArray
+      }
+    }
 
     if (opacity) {
       markSymbolizer.opacity = parseFloat(opacity);
@@ -171,6 +204,118 @@ class GeoserverSldStyleParser extends SldStyleParser {
     });
 
     return markSymbolizer;
+  }
+
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style MarkSymbolizer.
+   *
+   * @param {MarkSymbolizer} markSymbolizer A GeoStyler-Style MarkSymbolizer.
+   * @return {object} The object representation of a SLD PointSymbolizer with a
+   * Mark (readable with xml2js)
+   */
+   getSldPointSymbolizerFromMarkSymbolizer(markSymbolizer: GeoserverMarkSymbolizer): any {
+    const isFontSymbol = WELLKNOWNNAME_TTF_REGEXP.test(markSymbolizer.wellKnownName);
+    const mark: any[] = [{
+      'WellKnownName': [
+        isFontSymbol ? markSymbolizer.wellKnownName : markSymbolizer.wellKnownName.toLowerCase()
+      ]
+    }];
+
+    if (markSymbolizer.color || markSymbolizer.fillOpacity) {
+      const cssParameters = [];
+      if (markSymbolizer.color) {
+        cssParameters.push({
+          '_': markSymbolizer.color,
+          '$': {
+            'name': 'fill'
+          }
+        });
+      }
+      if (markSymbolizer.fillOpacity) {
+        cssParameters.push({
+          '_': markSymbolizer.fillOpacity,
+          '$': {
+            'name': 'fill-opacity'
+          }
+        });
+      }
+      mark[0].Fill = [{
+        'CssParameter': cssParameters
+      }];
+    }
+
+    if (markSymbolizer.strokeColor || markSymbolizer.strokeWidth || markSymbolizer.strokeOpacity) {
+      mark[0].Stroke = [{}];
+      const strokeCssParameters = [];
+      if (markSymbolizer.strokeColor) {
+        strokeCssParameters.push({
+          '_': markSymbolizer.strokeColor,
+          '$': {
+            'name': 'stroke'
+          }
+        });
+      }
+      if (markSymbolizer.strokeWidth) {
+        strokeCssParameters.push({
+          '_': markSymbolizer.strokeWidth.toString(),
+          '$': {
+            'name': 'stroke-width'
+          }
+        });
+      }
+      if (markSymbolizer.strokeOpacity) {
+        strokeCssParameters.push({
+          '_': markSymbolizer.strokeOpacity.toString(),
+          '$': {
+            'name': 'stroke-opacity'
+          }
+        });
+      }
+      mark[0].Stroke[0].CssParameter = strokeCssParameters;
+    }
+
+    if (markSymbolizer.function) {
+      const emptyArray: string[] = []
+      markSymbolizer.function[2].map((arr: string[]) => {
+        emptyArray.push(...arr)
+      })
+
+      const cssParameters = [];
+      if (markSymbolizer.function[0] === 'Interpolate') {
+        cssParameters.push({
+          '$': {
+            'name': markSymbolizer.function[0]
+          },
+          'Literal': emptyArray,
+          'PropertyName': [markSymbolizer.function[1]]
+        });
+      }
+      mark[0].Fill = [{
+        'CssParameter': cssParameters
+      }];
+    }
+
+    const graphic: any[] = [{
+      'Mark': mark
+    }];
+
+    if (markSymbolizer.opacity) {
+      graphic[0].Opacity = [markSymbolizer.opacity.toString()];
+    }
+
+    if (markSymbolizer.radius) {
+      graphic[0].Size = [(markSymbolizer.radius * 2).toString()];
+    }
+
+    if (markSymbolizer.rotate) {
+      graphic[0].Rotation = [markSymbolizer.rotate.toString()];
+    }
+
+    return {
+      'PointSymbolizer': [{
+        'Graphic': graphic
+      }]
+    };
   }
 }
 
