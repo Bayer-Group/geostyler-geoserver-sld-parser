@@ -94,8 +94,6 @@ class GeoserverSldStyleParser extends SldStyleParser {
 
     var sldFunction = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + '].Function');
 
-    
-
     const fillOpacityIdx: number = fillParams.findIndex((cssParam: any) => {
       return cssParam.$.name === 'fill-opacity';
     });
@@ -119,7 +117,7 @@ class GeoserverSldStyleParser extends SldStyleParser {
         //     newArray.push(temparray)
         // }
 
-        const perChunk = 2 // items per chunk    
+        const perChunk = 2 // items per chunk
 
         var newArray = sldFunction[0].Literal.reduce((resultArray: any, item: any, index: any) => { 
           const chunkIndex = Math.floor(index/perChunk)
@@ -138,7 +136,7 @@ class GeoserverSldStyleParser extends SldStyleParser {
           newArray
         ]
   
-        markSymbolizer.function = functionArray
+        markSymbolizer.func = functionArray
       }
     }
 
@@ -274,25 +272,38 @@ class GeoserverSldStyleParser extends SldStyleParser {
       mark[0].Stroke[0].CssParameter = strokeCssParameters;
     }
 
-    if (markSymbolizer.function) {
+    if (markSymbolizer.func) {
       const emptyArray: string[] = []
-      markSymbolizer.function[2].map((arr: string[]) => {
+      markSymbolizer.func[2].map((arr: string[]) => {
         emptyArray.push(...arr)
       })
 
+      console.log(emptyArray)
+
       const cssParameters = [];
-      if (markSymbolizer.function[0] === 'Interpolate') {
+      if (markSymbolizer.func[0] === 'Interpolate') {
         cssParameters.push({
+          '_': markSymbolizer.color,
           '$': {
-            'name': markSymbolizer.function[0]
+            'name': 'fill',
           },
-          'Literal': emptyArray,
-          'PropertyName': [markSymbolizer.function[1]]
-        });
+        })
       }
       mark[0].Fill = [{
         'CssParameter': cssParameters
       }];
+
+      console.log('first mark', mark)
+
+      mark[0].Fill[0] = {
+        'Function': [{
+          '$': { 'name': markSymbolizer.func[0] },
+            'Literal': emptyArray,
+            'PropertyName': [markSymbolizer.func[1]]
+        }]
+      }
+
+      console.log('second mark', mark)
     }
 
     const graphic: any[] = [{
