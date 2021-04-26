@@ -66,8 +66,6 @@ class GeoserverSldStyleParser extends SldStyleParser {
    * @return {MarkSymbolizer} The GeoStyler-Style MarkSymbolizer
    */
   getMarkSymbolizerFromSldSymbolizer(sldSymbolizer: any): GeoserverMarkSymbolizer {
-
-    console.log(sldSymbolizer)
     const wellKnownName: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
     let strokeParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].CssParameter') || [];
     if (strokeParams.length === 0) {
@@ -219,6 +217,7 @@ class GeoserverSldStyleParser extends SldStyleParser {
       ]
     }];
 
+
     if (markSymbolizer.color || markSymbolizer.fillOpacity) {
       const cssParameters = [];
       if (markSymbolizer.color) {
@@ -269,6 +268,7 @@ class GeoserverSldStyleParser extends SldStyleParser {
           }
         });
       }
+
       mark[0].Stroke[0].CssParameter = strokeCssParameters;
     }
 
@@ -277,33 +277,24 @@ class GeoserverSldStyleParser extends SldStyleParser {
       markSymbolizer.func[2].map((arr: string[]) => {
         emptyArray.push(...arr)
       })
-
-      console.log(emptyArray)
-
       const cssParameters = [];
+
       if (markSymbolizer.func[0] === 'Interpolate') {
         cssParameters.push({
-          '_': markSymbolizer.color,
           '$': {
-            'name': 'fill',
+            'name': 'fill'
           },
-        })
+          'Function': {
+            '$': { 'name': markSymbolizer.func[0] },
+            'PropertyName': [markSymbolizer.func[1]],
+            'Literal': emptyArray
+          }
+        });
       }
+
       mark[0].Fill = [{
         'CssParameter': cssParameters
       }];
-
-      console.log('first mark', mark)
-
-      mark[0].Fill[0] = {
-        'Function': [{
-          '$': { 'name': markSymbolizer.func[0] },
-            'Literal': emptyArray,
-            'PropertyName': [markSymbolizer.func[1]]
-        }]
-      }
-
-      console.log('second mark', mark)
     }
 
     const graphic: any[] = [{
