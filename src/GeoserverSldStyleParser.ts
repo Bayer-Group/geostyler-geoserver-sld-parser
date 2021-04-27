@@ -107,14 +107,6 @@ class GeoserverSldStyleParser extends SldStyleParser {
 
     if (sldFunction) {
       if (sldFunction[0].$.name === 'Interpolate') {
-        // let i, j, temparray, chunk = 2;
-        // const newArray = []
-        // for (i = 0,j = sldFunction[0].Literal.length; i < j; i += chunk) {
-        //     temparray = sldFunction[0].Literal.slice(i, i + chunk);
-        //     // do whatever
-        //     newArray.push(temparray)
-        // }
-
         const perChunk = 2 // items per chunk
 
         var newArray = sldFunction[0].Literal.reduce((resultArray: any, item: any, index: any) => { 
