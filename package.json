@@ -29,7 +29,8 @@
   ],
   "dependencies": {
     "geostyler-sld-parser": "2.2.0",
-    "geostyler-style": "2.2.0"
+    "geostyler-style": "2.2.0",
+    "lodash.get": "^4.4.2"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
