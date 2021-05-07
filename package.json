@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json && npm run build:browser",
     "build:browser": "webpack --config browser-build.config.js",
-    "start:dev": "webpack --config dev-build.config.js --watch",
+    "start:dev": "tsc -p tsconfig.json && npm run build:browser --watch",
     "pretest": "npm run lint",
     "prepublishOnly": "npm run build",
     "test": "jest",
