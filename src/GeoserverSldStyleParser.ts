@@ -119,13 +119,16 @@ class GeoserverSldStyleParser extends SldStyleParser {
 
           return resultArray
         }, [])
-  
+
+        const newestArray = newArray.map((arr: any, i: any) => {
+          return [i === 0 ? '>' : '<', sldFunction[0].PropertyName[0], ...arr]
+        })
+
         const functionArray = [
           sldFunction[0].$.name,
-          sldFunction[0].PropertyName[0],
-          newArray
+          ...newestArray
         ]
-  
+
         markSymbolizer.func = functionArray
       }
     }
@@ -209,7 +212,6 @@ class GeoserverSldStyleParser extends SldStyleParser {
       ]
     }];
 
-
     if (markSymbolizer.color || markSymbolizer.fillOpacity) {
       const cssParameters = [];
       if (markSymbolizer.color) {
@@ -265,10 +267,15 @@ class GeoserverSldStyleParser extends SldStyleParser {
     }
 
     if (markSymbolizer.func) {
+      const propertyName = markSymbolizer.func[1][1]
       const emptyArray: string[] = []
-      markSymbolizer.func[2].map((arr: string[]) => {
-        emptyArray.push(...arr)
+      markSymbolizer.func.map((arr: string[], i: any) => {
+        if (i !== 0) {
+            emptyArray.push(arr[2])
+            if (arr.length === 4) emptyArray.push(arr[3])
+          }
       })
+
       const cssParameters = [];
 
       if (markSymbolizer.func[0] === 'Interpolate') {
@@ -276,10 +283,10 @@ class GeoserverSldStyleParser extends SldStyleParser {
           '$': {
             'name': 'fill'
           },
-          'Function': {
+          'ogc:Function': {
             '$': { 'name': markSymbolizer.func[0] },
-            'PropertyName': [markSymbolizer.func[1]],
-            'Literal': emptyArray
+            'ogc:PropertyName': [propertyName],
+            'ogc:Literal': emptyArray
           }
         });
       }
@@ -287,6 +294,8 @@ class GeoserverSldStyleParser extends SldStyleParser {
       mark[0].Fill = [{
         'CssParameter': cssParameters
       }];
+
+      
     }
 
     const graphic: any[] = [{
