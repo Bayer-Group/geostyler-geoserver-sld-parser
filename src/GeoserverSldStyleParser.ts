@@ -242,7 +242,7 @@ class GeoserverSldStyleParser extends SldStyleParser {
    * Mark (readable with xml2js)
    */
    getSldPointSymbolizerFromMarkSymbolizer(markSymbolizer: GeoserverMarkSymbolizer): any {
-    debugger;const isFontSymbol = WELLKNOWNNAME_TTF_REGEXP.test(markSymbolizer.wellKnownName);
+    const isFontSymbol = WELLKNOWNNAME_TTF_REGEXP.test(markSymbolizer.wellKnownName);
     const mark: any[] = [{
       'WellKnownName': [
         isFontSymbol ? markSymbolizer.wellKnownName : markSymbolizer.wellKnownName.toLowerCase()
