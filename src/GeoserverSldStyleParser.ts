@@ -127,7 +127,7 @@ class GeoserverSldStyleParser extends SldStyleParser {
       }
     }
 
-    // var sldFunction = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + '].Function');
+    var sldFunction = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + '].Function');
 
     const fillOpacityIdx: number = fillParams.findIndex((cssParam: any) => {
       return cssParam.$.name === 'fill-opacity';
@@ -142,33 +142,33 @@ class GeoserverSldStyleParser extends SldStyleParser {
       kind: 'Mark',
     } as GeoserverMarkSymbolizer;
 
-    // if (sldFunction) {
-    //   if (sldFunction[0].$.name === 'Interpolate') {
-    //     const perChunk = 2 // items per chunk
+    if (sldFunction) {
+      if (sldFunction[0].$.name === 'Interpolate') {
+        const perChunk = 2 // items per chunk
 
-    //     var newArray = sldFunction[0].Literal.reduce((resultArray: any, item: any, index: any) => { 
-    //       const chunkIndex = Math.floor(index/perChunk)
+        var newArray = sldFunction[0].Literal.reduce((resultArray: any, item: any, index: any) => { 
+          const chunkIndex = Math.floor(index/perChunk)
 
-    //       if(!resultArray[chunkIndex]) {
-    //         resultArray[chunkIndex] = [] // start a new chunk
-    //       }
-    //       resultArray[chunkIndex].push(item)
+          if(!resultArray[chunkIndex]) {
+            resultArray[chunkIndex] = [] // start a new chunk
+          }
+          resultArray[chunkIndex].push(item)
 
-    //       return resultArray
-    //     }, [])
+          return resultArray
+        }, [])
 
-    //     const newestArray = newArray.map((arr: any, i: any) => {
-    //       return [i === 0 ? '>' : '<', sldFunction[0].PropertyName[0], ...arr]
-    //     })
+        const newestArray = newArray.map((arr: any, i: any) => {
+          return [i === 0 ? '>' : '<', sldFunction[0].PropertyName[0], ...arr]
+        })
 
-    //     const functionArray = [
-    //       sldFunction[0].$.name,
-    //       ...newestArray
-    //     ]
+        const functionArray = [
+          sldFunction[0].$.name,
+          ...newestArray
+        ]
 
-    //     markSymbolizer.func = functionArray
-    //   }
-    // }
+        markSymbolizer.func = functionArray
+      }
+    }
 
     if (opacity) {
       markSymbolizer.opacity = parseFloat(opacity);
@@ -303,37 +303,35 @@ class GeoserverSldStyleParser extends SldStyleParser {
       mark[0].Stroke[0].CssParameter = strokeCssParameters;
     }
 
-    // if (markSymbolizer.func) {
-    //   const propertyName = markSymbolizer.func[1][1]
-    //   const emptyArray: string[] = []
-    //   markSymbolizer.func.map((arr: string[], i: any) => {
-    //     if (i !== 0) {
-    //         emptyArray.push(arr[2])
-    //         if (arr.length === 4) emptyArray.push(arr[3])
-    //       }
-    //   })
+    if (markSymbolizer.func) {
+      const propertyName = markSymbolizer.func[1][1]
+      const emptyArray: string[] = []
+      markSymbolizer.func.map((arr: string[], i: any) => {
+        if (i !== 0) {
+            emptyArray.push(arr[2])
+            if (arr.length === 4) emptyArray.push(arr[3])
+          }
+      })
 
-    //   const cssParameters = [];
+      const cssParameters = [];
 
-    //   if (markSymbolizer.func[0] === 'Interpolate') {
-    //     cssParameters.push({
-    //       '$': {
-    //         'name': 'fill'
-    //       },
-    //       'ogc:Function': {
-    //         '$': { 'name': markSymbolizer.func[0] },
-    //         'ogc:PropertyName': [propertyName],
-    //         'ogc:Literal': emptyArray
-    //       }
-    //     });
-    //   }
+      if (markSymbolizer.func[0] === 'Interpolate') {
+        cssParameters.push({
+          '$': {
+            'name': 'fill'
+          },
+          'ogc:Function': {
+            '$': { 'name': markSymbolizer.func[0] },
+            'ogc:PropertyName': [propertyName],
+            'ogc:Literal': emptyArray
+          }
+        });
+      }
 
-    //   mark[0].Fill = [{
-    //     'CssParameter': cssParameters
-    //   }];
-
-      
-    // }
+      mark[0].Fill = [{
+        'CssParameter': cssParameters
+      }];
+    }
 
     const graphic: any[] = [{
       'Mark': mark
