@@ -54,6 +54,8 @@ class GeoserverSldStyleParser extends SldStyleParser {
       filter.push(sldFilter.$);
 
       return filter;
+    } else {
+      return filter;
     }
   }
 
