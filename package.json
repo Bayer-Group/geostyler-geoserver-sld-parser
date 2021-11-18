@@ -18,7 +18,7 @@
   "license": "BSD",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MonsantoCo/geostyler-geoserver-sld-parser"
+    "url": "https://github.com/Bayer-Group/geostyler-geoserver-sld-parser"
   },
   "keywords": [
     "geostyler",
