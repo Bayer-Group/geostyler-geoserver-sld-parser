@@ -4,8 +4,10 @@ import GeoserverTextSymbolizer from './GeoserverTextSymbolizer';
 import GeoserverMarkSymbolizer from './GeoserverMarkSymbolizer'
 import {
   Filter,
-  ComparisonFilter
+  ComparisonFilter, BaseSymbolizer,
 } from 'geostyler-style';
+import GeoserverFillSymbolizer from './GeoserverFillSymbolizer';
+import GeoserverTextSymbolizer from './GeoserverTextSymbolizer';
 var _get = require('lodash.get')
 
 const VENDOR_OPTIONS_MAP = [
@@ -18,8 +20,9 @@ const VENDOR_OPTIONS_MAP = [
   'conflictResolution',
   'goodnessOfFit',
   'labelAllGroup',
-  'polygonAlign'
-]
+  'polygonAlign',
+  'graphic-margin'
+];
 
 function keysByValue (object: any, value: any) {
   return Object.keys(object).filter(key => object[key] === value);
@@ -61,20 +64,12 @@ class GeoserverSldStyleParser extends SldStyleParser {
 
   // reading SLD string and return object
   getTextSymbolizerFromSldSymbolizer(sldSymbolizer: any): GeoserverTextSymbolizer {
-    const finalSymbolizer = super.getTextSymbolizerFromSldSymbolizer(sldSymbolizer)
+    const finalSymbolizer = super.getTextSymbolizerFromSldSymbolizer(sldSymbolizer) as GeoserverTextSymbolizer;
 
     // if there are vendor options, parse them and assign to the final symbolizer
-    if (Array.isArray(sldSymbolizer.VendorOption)) {
-      const assignOption = (option: any) => {
-        const { $: { name }, _: value } = option;
+    this.assignVendorOptions_(sldSymbolizer, finalSymbolizer);
 
-        finalSymbolizer[name] = value;
-      }
-
-      sldSymbolizer.VendorOption.forEach(assignOption);
-    }
-
-    finalSymbolizer['LabelPlacement'] = sldSymbolizer.LabelPlacement;
+    finalSymbolizer.LabelPlacement = sldSymbolizer.LabelPlacement;
 
     return finalSymbolizer;
   }
@@ -82,14 +77,7 @@ class GeoserverSldStyleParser extends SldStyleParser {
   // write to xml2js compatible output format (which converts to a string..eventually)
   getSldTextSymbolizerFromTextSymbolizer(textSymbolizer: GeoserverTextSymbolizer): any {
     const finalSymbolizer = super.getSldTextSymbolizerFromTextSymbolizer(textSymbolizer);
-
-    const vendorOption = Object.keys(textSymbolizer).filter((propertyName: string) => VENDOR_OPTIONS_MAP.includes(propertyName))
-      .map((propertyName: string) => {
-        return {
-          '_': textSymbolizer[propertyName],
-          '$': { name: propertyName }
-        }
-    });
+    const vendorOption = this.writeVendorOption_(textSymbolizer);
 
     finalSymbolizer.TextSymbolizer[0].VendorOption = vendorOption;
 
@@ -97,6 +85,20 @@ class GeoserverSldStyleParser extends SldStyleParser {
 
     return finalSymbolizer;
   }
+
+  getFillSymbolizerFromSldSymbolizer(sldSymbolizer: any): GeoserverFillSymbolizer {
+    const finalSymbolizer = super.getFillSymbolizerFromSldSymbolizer(sldSymbolizer) as GeoserverFillSymbolizer;
+    this.assignVendorOptions_(sldSymbolizer, finalSymbolizer);
+    return finalSymbolizer;
+  }
+
+  getSldPolygonSymbolizerFromFillSymbolizer(fillSymbolizer: GeoserverFillSymbolizer): any {
+    const finalSymbolizer = super.getSldPolygonSymbolizerFromFillSymbolizer(fillSymbolizer);
+    const vendorOption = this.writeVendorOption_(fillSymbolizer);
+    finalSymbolizer.PolygonSymbolizer[0].VendorOption = vendorOption;
+    return finalSymbolizer;
+  }
+
 
 /**
    * Get the GeoStyler-Style MarkSymbolizer from an SLD Symbolizer
@@ -113,6 +115,7 @@ class GeoserverSldStyleParser extends SldStyleParser {
     const opacity: string = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
     const size: string = _get(sldSymbolizer, 'Graphic[0].Size[0]');
     const rotation: string = _get(sldSymbolizer, 'Graphic[0].Rotation[0]');
+
 
     let fillParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter') || [];
     if (fillParams.length === 0) {
@@ -356,6 +359,27 @@ class GeoserverSldStyleParser extends SldStyleParser {
         'Graphic': graphic
       }]
     };
+  }
+
+  writeVendorOption_(symbolizer: BaseSymbolizer) {
+    return Object.keys(symbolizer).filter(
+      (propertyName: string) => VENDOR_OPTIONS_MAP.includes(propertyName))
+      .map((propertyName: string) => {
+        return {
+          '_': symbolizer[propertyName],
+          '$': { name: propertyName }
+        };
+      });
+  }
+
+  assignVendorOptions_(sldSymbolizer: any, finalSymbolizer: BaseSymbolizer): void {
+    if (Array.isArray(sldSymbolizer.VendorOption)) {
+      const assignOption = (option: any) => {
+        const {$: {name}, _: value} = option;
+        finalSymbolizer[name] = value;
+      };
+      sldSymbolizer.VendorOption.forEach(assignOption);
+    }
   }
 }
 
