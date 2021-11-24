@@ -53,7 +53,7 @@ interface GeoserverMarkSymbolizer extends BasePointSymbolizer {
    */
   pitchScale?: 'map' | 'viewport';
 
-  func?: any
+  func?: any;
 }
 
-export default GeoserverMarkSymbolizer
+export default GeoserverMarkSymbolizer;

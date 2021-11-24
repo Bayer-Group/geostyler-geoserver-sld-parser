@@ -12,8 +12,7 @@
     "prepublishOnly": "npm run build",
     "test": "jest",
     "test:watch": "jest --watchAll",
-    "lint": "tslint --project tsconfig.json --config tslint.json && tsc --noEmit --project tsconfig.json",
-    "release": "np --no-yarn && git push https://github.com/terrestris/geostyler-sld-parser.git master --tags"
+    "lint": "tslint --project tsconfig.json --config tslint.json && tsc --noEmit --project tsconfig.json"
   },
   "license": "BSD",
   "repository": {
@@ -44,13 +43,14 @@
     "@types/node": "^12.7.3",
     "@types/xml2js": "^0.4.4",
     "babel-jest": "^24.9.0",
-    "coveralls": "^3.0.6",
-    "jest": "^24.9.0",
-    "np": "^5.0.3",
+    "jest": "^27.3.1",
+    "np": "^7.6.0",
+    "terser-webpack-plugin": "^5.2.5",
     "ts-loader": "^6.0.4",
     "tslint": "^5.19.0",
     "typescript": "^3.6.2",
-    "webpack": "^4.39.3",
-    "webpack-cli": "^3.3.7"
+    "buffer": "^6.0.3",
+    "webpack": "^5.64.3",
+    "webpack-cli": "^4.9.1"
   }
 }
