@@ -1,13 +1,13 @@
 {
   "name": "@bayer/geostyler-geoserver-sld-parser",
-  "version": "0.2.1",
+  "version": "0.3.2",
   "description": "GeoStyler-Geoserver-Style-Parser implementation for SLD",
   "main": "build/dist/GeoserverSldStyleParser.js",
   "types": "build/dist/GeoserverSldStyleParser.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json && npm run build:browser",
     "build:browser": "webpack --config browser-build.config.js",
-    "start:dev": "webpack --config dev-build.config.js --watch",
+    "start:dev": "tsc -p tsconfig.json && npm run build:browser --watch",
     "pretest": "npm run lint",
     "prepublishOnly": "npm run build",
     "test": "jest",
@@ -18,7 +18,7 @@
   "license": "BSD",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MonsantoCo/geostyler-geoserver-sld-parser"
+    "url": "https://github.com/Bayer-Group/geostyler-geoserver-sld-parser"
   },
   "keywords": [
     "geostyler",
@@ -28,8 +28,9 @@
     "parser"
   ],
   "dependencies": {
-    "geostyler-sld-parser": "^2.0.0",
-    "geostyler-style": "^2.0.3"
+    "geostyler-sld-parser": "2.2.0",
+    "geostyler-style": "2.2.0",
+    "lodash.get": "^4.4.2"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
