@@ -1,4 +1,4 @@
-import GeoserverSldStyleParser from './GeoserverSldStyleParser'
+import GeoserverSldStyleParser from './GeoserverSldStyleParser';
 
 const polygonSimpleGraphicFill: any = {
   name: 'My Style',
@@ -7,21 +7,20 @@ const polygonSimpleGraphicFill: any = {
       name: 'My Rule',
       symbolizers: [
         {
-          "kind": "Fill",
-          "color": "#a5c9e5",
-          "graphicFill": {
-            "kind": "Mark",
-            "wellKnownName": "Star",
-            "radius": 8,
-            "color": "#0000FF",
+          'kind': 'Fill',
+          'color': '#a5c9e5',
+          'graphicFill': {
+            'kind': 'Mark',
+            'wellKnownName': 'Star',
+            'radius': 8,
+            'color': '#0000FF',
           },
-          "graphic-margin": '3 5 10'
+          'graphic-margin': '3 5 10'
         },
       ],
     },
   ],
 };
-
 
 const sldOutput = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <StyledLayerDescriptor version="1.0.0" xsi:schemaLocation="http://www.opengis.net/sld StyledLayerDescriptor.xsd" xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -54,28 +53,25 @@ const sldOutput = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
       </FeatureTypeStyle>
     </UserStyle>
   </NamedLayer>
-</StyledLayerDescriptor>
-`
+</StyledLayerDescriptor>`;
 
 const parser = new GeoserverSldStyleParser();
 
 describe('GeoserverFillSymbolizer', () => {
   describe('#writeStyle', () => {
-    it('transforms graphic-margin in VendorOptions', () => {
+    it('transforms graphic-margin in VendorOptions', async () => {
       expect.assertions(1);
-      parser
-        .writeStyle(polygonSimpleGraphicFill).then(sld => {
-        expect(sld).toEqual(sldOutput);
-      });
+      const sld = await parser.writeStyle(polygonSimpleGraphicFill);
+      expect(sld).toEqual(sldOutput);
+
     });
   });
   describe('#readStyle', () => {
-    it('reads VendorOptions graphic-margin', () => {
+    it('reads VendorOptions graphic-margin', async () => {
       expect.assertions(1);
-      parser
-        .readStyle(sldOutput).then(gsObject => {
-        expect(gsObject).toEqual(polygonSimpleGraphicFill);
-      });
+      const gsObject =  await parser.readStyle(sldOutput);
+      expect(gsObject).toEqual(polygonSimpleGraphicFill);
+
     });
   });
 });

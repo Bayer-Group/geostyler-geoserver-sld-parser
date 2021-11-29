@@ -1,15 +1,19 @@
 import SldStyleParser from 'geostyler-sld-parser';
 import { WellKnownName } from 'geostyler-style';
 import GeoserverTextSymbolizer from './GeoserverTextSymbolizer';
-import GeoserverMarkSymbolizer from './GeoserverMarkSymbolizer'
+import GeoserverMarkSymbolizer from './GeoserverMarkSymbolizer';
+import GeoserverFillSymbolizer from './GeoserverFillSymbolizer';
 import {
   Filter,
   ComparisonFilter, BaseSymbolizer,
 } from 'geostyler-style';
-import GeoserverFillSymbolizer from './GeoserverFillSymbolizer';
-import GeoserverTextSymbolizer from './GeoserverTextSymbolizer';
-var _get = require('lodash.get')
-
+const _get = require('lodash.get');
+type CssParam  = {
+  '_': string | number,
+  '$': {
+    name: string
+  };
+};
 const VENDOR_OPTIONS_MAP = [
   'partials',
   'repeat',
@@ -28,7 +32,7 @@ function keysByValue (object: any, value: any) {
   return Object.keys(object).filter(key => object[key] === value);
 }
 
-var WELLKNOWNNAME_TTF_REGEXP = /^ttf:\/\/(.+)#(.+)$/;
+const WELLKNOWNNAME_TTF_REGEXP = /^ttf:\/\/(.+)#(.+)$/;
 
 class GeoserverSldStyleParser extends SldStyleParser {
   getSldComparisonFilterFromComparisonFilter(comparisonFilter: ComparisonFilter): any {
@@ -99,8 +103,7 @@ class GeoserverSldStyleParser extends SldStyleParser {
     return finalSymbolizer;
   }
 
-
-/**
+  /**
    * Get the GeoStyler-Style MarkSymbolizer from an SLD Symbolizer
    *
    * @param {object} sldSymbolizer The SLD Symbolizer
@@ -115,7 +118,6 @@ class GeoserverSldStyleParser extends SldStyleParser {
     const opacity: string = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
     const size: string = _get(sldSymbolizer, 'Graphic[0].Size[0]');
     const rotation: string = _get(sldSymbolizer, 'Graphic[0].Rotation[0]');
-
 
     let fillParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter') || [];
     if (fillParams.length === 0) {
@@ -132,16 +134,16 @@ class GeoserverSldStyleParser extends SldStyleParser {
       }
     }
 
-    var sldFunction = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + '].Function');
+    const sldFunction = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + '].Function');
 
     const fillOpacityIdx: number = fillParams.findIndex((cssParam: any) => {
       return cssParam.$.name === 'fill-opacity';
     });
     let fillOpacity: string = _get(sldSymbolizer,
-      'Graphic[0].Mark[0].Fill[0].CssParameter[' + fillOpacityIdx + ']._');
+                                   'Graphic[0].Mark[0].Fill[0].CssParameter[' + fillOpacityIdx + ']._');
     if (!fillOpacity) {
       fillOpacity = _get(sldSymbolizer,
-        'Graphic[0].Mark[0].Fill[0].SvgParameter[' + fillOpacityIdx + ']._');
+                         'Graphic[0].Mark[0].Fill[0].SvgParameter[' + fillOpacityIdx + ']._');
     }
     const markSymbolizer: GeoserverMarkSymbolizer = {
       kind: 'Mark',
@@ -149,29 +151,29 @@ class GeoserverSldStyleParser extends SldStyleParser {
 
     if (sldFunction) {
       if (sldFunction[0].$.name === 'Interpolate') {
-        const perChunk = 2 // items per chunk
+        const perChunk = 2; // items per chunk
 
         var newArray = sldFunction[0].Literal.reduce((resultArray: any, item: any, index: any) => { 
-          const chunkIndex = Math.floor(index/perChunk)
+          const chunkIndex = Math.floor(index / perChunk);
 
-          if(!resultArray[chunkIndex]) {
-            resultArray[chunkIndex] = [] // start a new chunk
+          if (!resultArray[chunkIndex]) {
+            resultArray[chunkIndex] = []; // start a new chunk
           }
-          resultArray[chunkIndex].push(item)
+          resultArray[chunkIndex].push(item);
 
-          return resultArray
-        }, [])
+          return resultArray;
+        },                                           []);
 
         const newestArray = newArray.map((arr: any, i: any) => {
-          return [i === 0 ? '>' : '<', sldFunction[0].PropertyName[0], ...arr]
-        })
+          return [i === 0 ? '>' : '<', sldFunction[0].PropertyName[0], ...arr];
+        });
 
         const functionArray = [
           sldFunction[0].$.name,
           ...newestArray
-        ]
+        ];
 
-        markSymbolizer.func = functionArray
+        markSymbolizer.func = functionArray;
       }
     }
 
@@ -255,7 +257,7 @@ class GeoserverSldStyleParser extends SldStyleParser {
     }];
 
     if (markSymbolizer.color || markSymbolizer.fillOpacity) {
-      const cssParameters = [];
+      const cssParameters: CssParam[] = [];
       if (markSymbolizer.color) {
         cssParameters.push({
           '_': markSymbolizer.color,
@@ -309,14 +311,14 @@ class GeoserverSldStyleParser extends SldStyleParser {
     }
 
     if (markSymbolizer.func) {
-      const propertyName = markSymbolizer.func[1][1]
-      const emptyArray: string[] = []
+      const propertyName = markSymbolizer.func[1][1];
+      const emptyArray: string[] = [];
       markSymbolizer.func.map((arr: string[], i: any) => {
         if (i !== 0) {
-            emptyArray.push(arr[2])
-            if (arr.length === 4) emptyArray.push(arr[3])
+            emptyArray.push(arr[2]);
+            if (arr.length === 4) { emptyArray.push(arr[3]); }
           }
-      })
+      });
 
       const cssParameters = [];
 
